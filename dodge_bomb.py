@@ -9,6 +9,19 @@ WIDTH, HEIGHT = 1100, 650
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
+def check_bound(rect):
+    """
+    rectが画面内か画面外かを判定する関数
+    引数:rect - こうかとんRect or 爆弾Rect
+    戻り値:横方向・縦方向の真理値タプル（True:画面内/False:画面外）
+    """
+    x, y = True, True
+    if rect.left < 0 or rect.right > WIDTH:
+        x = False
+    if rect.top < 0 or rect.bottom > HEIGHT:
+        y = False
+    return x, y
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -47,9 +60,18 @@ def main():
                 sum_mv[1] += delta[1]
 
         kk_rct.move_ip(sum_mv)
+        if not check_bound(kk_rct)[0]:
+            kk_rct.move_ip(-sum_mv[0], 0)
+        if not check_bound(kk_rct)[1]:
+            kk_rct.move_ip(0, -sum_mv[1])
         screen.blit(kk_img, kk_rct)
 
         bb_rct.move_ip(vx, vy)
+        x_bound, y_bound = check_bound(bb_rct)
+        if not x_bound:
+            vx = -vx
+        if not y_bound:
+            vy = -vy
         screen.blit(bb_img, bb_rct)
 
         pg.display.update()
