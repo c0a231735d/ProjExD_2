@@ -50,6 +50,19 @@ def gameover(screen: pg.Surface) -> None:
     pg.display.update()
     time.sleep(5)
 
+def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+    """
+    サイズの異なる爆弾Surfaceを要素としたリストと加速度リストを返す
+    """
+    bb_imgs = []
+    bb_accs = [a for a in range(1, 11)]
+    for r in range(1, 11):
+        bb_img = pg.Surface((20*r, 20*r))
+        bb_img.set_colorkey((0, 0, 0))
+        pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r)
+        bb_imgs.append(bb_img)
+    return bb_imgs, bb_accs
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -67,10 +80,8 @@ def main():
         pg.K_RIGHT: (5, 0)
     }
 
-    bb_img = pg.Surface((20, 20))
-    bb_img.set_colorkey((0, 0, 0))
-    pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10)
-    bb_rct = bb_img.get_rect()
+    bb_imgs, bb_accs = init_bb_imgs()
+    bb_rct = bb_imgs[0].get_rect()
     bb_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
     vx, vy = 5, 5
 
@@ -94,13 +105,16 @@ def main():
             kk_rct.move_ip(0, -sum_mv[1])
         screen.blit(kk_img, kk_rct)
 
-        bb_rct.move_ip(vx, vy)
+        idx = min(tmr // 500, 9)
+        avx = vx * bb_accs[idx]
+        avy = vy * bb_accs[idx]
+        bb_rct.move_ip(avx, avy)
         x_bound, y_bound = check_bound(bb_rct)
         if not x_bound:
             vx = -vx
         if not y_bound:
             vy = -vy
-        screen.blit(bb_img, bb_rct)
+        screen.blit(bb_imgs[idx], bb_rct)
 
         if kk_rct.colliderect(bb_rct):
             gameover(screen)
@@ -108,6 +122,7 @@ def main():
 
         pg.display.update()
         clock.tick(60)
+        tmr += 1
 
 if __name__ == "__main__":
     pg.init()
