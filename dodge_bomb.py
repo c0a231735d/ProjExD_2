@@ -1,8 +1,8 @@
-import os
 import sys
 import pygame as pg
 import random
 import os
+import time
 
 WIDTH, HEIGHT = 1100, 650
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -19,6 +19,36 @@ def check_bound(rect):
     if rect.top < 0 or rect.bottom > HEIGHT:
         y = False
     return x, y
+
+def gameover(screen: pg.Surface) -> None:
+    """
+    ゲームオーバー時に、半透明の黒い画面上に「Game Over」と表示し、
+    泣いているこうかとん画像を貼り付ける関数
+    """
+    # 半透明の黒い画面を描画
+    blackout = pg.Surface((WIDTH, HEIGHT))
+    blackout.set_alpha(128)  # 透明度を設定
+    blackout.fill((0, 0, 0))
+    screen.blit(blackout, (0, 0))
+
+    # "Game Over"の文字列を描画
+    font = pg.font.Font(None, 80)
+    txt = font.render("Game Over", True, (255, 255, 255))
+    txt_rect = txt.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+    screen.blit(txt, txt_rect.topleft)
+
+    # 泣いているこうかとん画像を描画（左側）
+    crying_kk_img = pg.transform.rotozoom(pg.image.load("fig/8.png"), 0, 0.9)
+    crying_kk_rct = crying_kk_img.get_rect()
+    crying_kk_rct.center = (txt_rect.left - crying_kk_rct.width // 2, HEIGHT // 2)
+    screen.blit(crying_kk_img, crying_kk_rct)
+
+    # 泣いているこうかとん画像を描画（右側）
+    crying_kk_rct.center = (txt_rect.right + crying_kk_rct.width // 2, HEIGHT // 2)
+    screen.blit(crying_kk_img, crying_kk_rct)
+
+    pg.display.update()
+    time.sleep(5)
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
@@ -73,6 +103,7 @@ def main():
         screen.blit(bb_img, bb_rct)
 
         if kk_rct.colliderect(bb_rct):
+            gameover(screen)
             return
 
         pg.display.update()
