@@ -1,13 +1,11 @@
 import os
 import sys
 import pygame as pg
-import sys
 import random
-
+import os
 
 WIDTH, HEIGHT = 1100, 650
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
 
 def check_bound(rect):
     """
@@ -74,9 +72,11 @@ def main():
             vy = -vy
         screen.blit(bb_img, bb_rct)
 
+        if kk_rct.colliderect(bb_rct):
+            return
+
         pg.display.update()
         clock.tick(60)
-
 
 if __name__ == "__main__":
     pg.init()
