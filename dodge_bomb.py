@@ -52,16 +52,32 @@ def gameover(screen: pg.Surface) -> None:
 
 def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
     """
-    サイズの異なる爆弾Surfaceを要素としたリストと加速度リストを返す
+    サイズの異なる爆弾Surfaceを要素としたリストと加速度リストを返す関数
     """
-    bb_imgs = []
-    bb_accs = [a for a in range(1, 11)]
+    bb_imgs = []  # 爆弾の画像リスト
+    bb_accs = [a for a in range(1, 11)]  # 加速度のリスト
     for r in range(1, 11):
-        bb_img = pg.Surface((20*r, 20*r))
-        bb_img.set_colorkey((0, 0, 0))
-        pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r)
-        bb_imgs.append(bb_img)
+        bb_img = pg.Surface((20*r, 20*r))  # 爆弾のサイズを変更
+        bb_img.set_colorkey((0, 0, 0))  # 黒色を透明に設定
+        pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r)  # 赤い円を描画
+        bb_imgs.append(bb_img)  # リストに追加
     return bb_imgs, bb_accs
+
+def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
+    """
+    移動量の合計値タプルに対応する向きの画像Surfaceを返す関数
+    """
+    kk_imgs = {
+        (-5, 0): pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9),  # 左向き
+        (-5, -5): pg.transform.rotozoom(pg.image.load("fig/3.png"), -45, 0.9),  # 左上向き
+        (-5, 5): pg.transform.rotozoom(pg.image.load("fig/3.png"), 45, 0.9),  # 左下向き
+        (0, 5): pg.transform.rotozoom(pg.image.load("fig/3.png"), 90, 0.9),  # 下向き
+        (0, -5): pg.transform.rotozoom(pg.image.load("fig/3.png"), -90, 0.9),  # 上向き
+        (5, -5): pg.transform.flip(pg.transform.rotozoom(pg.image.load("fig/3.png"), 135, 0.9), False, True),  # 右下向き
+        (5, 5): pg.transform.flip(pg.transform.rotozoom(pg.image.load("fig/3.png"), -135, 0.9), False, True),  # 右上向き
+        (5, 0): pg.transform.flip(pg.image.load("fig/3.png"), True, False),  # 右向き
+    }
+    return kk_imgs.get(sum_mv, pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9))  # デフォルトは正面向き
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
@@ -80,10 +96,10 @@ def main():
         pg.K_RIGHT: (5, 0)
     }
 
-    bb_imgs, bb_accs = init_bb_imgs()
-    bb_rct = bb_imgs[0].get_rect()
+    bb_imgs, bb_accs = init_bb_imgs()  # 爆弾の画像と加速度のリストを初期化
+    bb_rct = bb_imgs[0].get_rect()  # 爆弾の初期位置を設定
     bb_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
-    vx, vy = 5, 5
+    vx, vy = 5, 5  # 爆弾の初期速度
 
     while True:
         for event in pg.event.get():
@@ -98,14 +114,15 @@ def main():
                 sum_mv[0] += delta[0]
                 sum_mv[1] += delta[1]
 
-        kk_rct.move_ip(sum_mv)
+        kk_img = get_kk_img(tuple(sum_mv))  # 移動方向に応じてこうかとんの画像を取得
+        kk_rct.move_ip(sum_mv)  # こうかとんを移動
         if not check_bound(kk_rct)[0]:
             kk_rct.move_ip(-sum_mv[0], 0)
         if not check_bound(kk_rct)[1]:
             kk_rct.move_ip(0, -sum_mv[1])
         screen.blit(kk_img, kk_rct)
 
-        idx = min(tmr // 500, 9)
+        idx = min(tmr // 500, 9)  # 時間に応じて爆弾のサイズと速度を変更
         avx = vx * bb_accs[idx]
         avy = vy * bb_accs[idx]
         bb_rct.move_ip(avx, avy)
@@ -116,8 +133,8 @@ def main():
             vy = -vy
         screen.blit(bb_imgs[idx], bb_rct)
 
-        if kk_rct.colliderect(bb_rct):
-            gameover(screen)
+        if kk_rct.colliderect(bb_rct):  # こうかとんが爆弾に衝突した場合
+            gameover(screen)  # ゲームオーバー画面を表示
             return
 
         pg.display.update()
