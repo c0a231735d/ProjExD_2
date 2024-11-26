@@ -90,6 +90,7 @@ def calc_orientation(org: pg.Rect, dst: pg.Rect, current_xy: tuple[float, float]
     """
     dx, dy = dst.centerx - org.centerx, dst.centery - org.centery  # 目的地までの差分を計算
     distance = math.hypot(dx, dy)  # 距離を計算
+<<<<<<< HEAD
     if distance <= 300:  # 距離が300未満の場合、慣性として前の方向に移動
         norm = math.sqrt(50)
         vx, vy = dx / distance * norm, dy / distance * norm
@@ -99,6 +100,14 @@ def calc_orientation(org: pg.Rect, dst: pg.Rect, current_xy: tuple[float, float]
     vx, vy = dx / distance * norm, dy / distance * norm
 
     return [vx, vy]
+=======
+    if distance < 300:  # 距離が300未満の場合、慣性として前の方向に移動
+        return current_xy
+    norm = math.sqrt(50)  # 速度ベクトルのノルムを√50に正規化
+    vx, vy = dx / distance * norm, dy / distance * norm
+
+    return vx, vy
+>>>>>>> ea233517246f20446192553473085610e6239dcd
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん")  # ウィンドウのタイトルを設定
